@@ -9,6 +9,7 @@ import uuid
 
 app = FastAPI(title="Order Service", version="1.0.0")
 
+
 @app.on_event("startup")
 def startup():
     try:
@@ -17,9 +18,11 @@ def startup():
         print(f"Database connection failed on startup: {e}")
         print("App will continue running - retrying on first request")
 
+
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "order-service"}
+
 
 @app.post("/orders", response_model=OrderResponse, status_code=201)
 async def create_order(order: OrderCreate, db: Session = Depends(get_db)):
@@ -46,7 +49,8 @@ async def create_order(order: OrderCreate, db: Session = Depends(get_db)):
                 )
 
             total_price += product["price"] * item.quantity
-            items_data.append({"product_id": item.product_id, "quantity": item.quantity})
+            items_data.append(
+                {"product_id": item.product_id, "quantity": item.quantity})
 
             await client.patch(
                 f"{settings.PRODUCT_SERVICE_URL}/products/{item.product_id}/stock",
@@ -64,7 +68,9 @@ async def create_order(order: OrderCreate, db: Session = Depends(get_db)):
         )
 
         if payment_resp.status_code != 201:
-            raise HTTPException(status_code=502, detail="Payment processing failed")
+            raise HTTPException(
+                status_code=502,
+                detail="Payment processing failed")
 
         payment = payment_resp.json()
 
@@ -87,6 +93,7 @@ async def create_order(order: OrderCreate, db: Session = Depends(get_db)):
         status=db_order.status
     )
 
+
 @app.get("/orders/{order_id}", response_model=OrderResponse)
 def get_order(order_id: str, db: Session = Depends(get_db)):
     order = db.query(OrderDB).filter(OrderDB.id == order_id).first()
@@ -99,6 +106,7 @@ def get_order(order_id: str, db: Session = Depends(get_db)):
         total_price=order.total_price,
         status=order.status
     )
+
 
 @app.get("/orders", response_model=List[OrderResponse])
 def list_orders(db: Session = Depends(get_db)):

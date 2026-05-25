@@ -21,9 +21,11 @@ class OrderItem(BaseModel):
     product_id: str
     quantity: int
 
+
 class OrderCreate(BaseModel):
     customer_email: str
     items: List[OrderItem]
+
 
 class OrderResponse(BaseModel):
     id: str

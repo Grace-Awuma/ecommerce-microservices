@@ -22,6 +22,7 @@ class PaymentRequest(BaseModel):
     amount: float
     customer_email: str
 
+
 class PaymentResponse(BaseModel):
     id: str
     order_id: str
