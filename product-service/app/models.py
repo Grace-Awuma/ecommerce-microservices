@@ -1,10 +1,11 @@
 from sqlalchemy import Column, String, Float, Integer
-from sqlalchemy.dialects.postgresql import UUID
 from pydantic import BaseModel
 from app.database import Base
 import uuid
 
 # SQLAlchemy model (database table)
+
+
 class ProductDB(Base):
     __tablename__ = "products"
 
@@ -22,6 +23,7 @@ class ProductCreate(BaseModel):
     price: float
     stock: int
 
+
 class ProductResponse(BaseModel):
     id: str
     name: str
@@ -31,6 +33,7 @@ class ProductResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class StockUpdate(BaseModel):
     quantity: int
