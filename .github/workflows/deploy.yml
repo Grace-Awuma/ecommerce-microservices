@@ -1,0 +1,45 @@
+name: Deploy to AKS
+
+on:
+  workflow_run:
+    workflows: ["Build and Push to ACR"]
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: |
+            {
+              "clientId": "${{ secrets.AZURE_CLIENT_ID }}",
+              "clientSecret": "${{ secrets.AZURE_CLIENT_SECRET }}",
+              "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}",
+              "tenantId": "${{ secrets.AZURE_TENANT_ID }}"
+            }
+
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials \
+            --resource-group ecommerce-rg \
+            --name ecommerce-aks \
+            --overwrite-existing
+
+      - name: Deploy to AKS
+        run: |
+          kubectl rollout restart deployment/product-service -n ecommerce
+          kubectl rollout restart deployment/order-service -n ecommerce
+          kubectl rollout restart deployment/payment-service -n ecommerce
+
+      - name: Verify deployment
+        run: kubectl get pods -n ecommerce
